@@ -12,8 +12,8 @@ public class Earthquake  {
     @Nonnull
     private String Place= "";
 
-
-    private float Magnitude=0;
+    @Nonnull
+    private String Magnitude="";
 
     @Nonnull
     private String Date="";
@@ -38,11 +38,11 @@ public class Earthquake  {
         this.Place = Place;
     }
 
-    public float getMagnitude() {
+    public String getMagnitude() {
         return Magnitude;
     }
 
-    public void setMagnitude(float Magnitude) {
+    public void setMagnitude(@Nonnull String Magnitude) {
         this.Magnitude = Magnitude;
     }
 
@@ -62,7 +62,7 @@ public class Earthquake  {
         this.Time = Time;
     }
 
-    public Earthquake(@Nonnull String country, @Nonnull String place, float magnitude,
+    public Earthquake(@Nonnull String country, @Nonnull String place,@Nonnull String magnitude,
         @Nonnull String date, @Nonnull  String time) {
         Country = country;
         Place = place;
