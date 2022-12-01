@@ -1,5 +1,7 @@
 package com.example.application.views.earthquakes;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import com.example.application.data.entity.Earthquake;
@@ -24,16 +26,33 @@ import com.vaadin.flow.router.RouteAlias;
 public class EarthquakesView extends VerticalLayout {
     Grid<Earthquake> grid = new Grid<>(Earthquake.class, false);
     TextField filterText= new TextField();
+    Filterform form;
 
     public EarthquakesView() {
+
         addClassName("Earthquake-view");
         setSizeFull();
         configureGrid();
+        configureForm();
 
         add(
             getToolbar(),
-            grid
+            getContent()
         );
+    }
+
+    private Component getContent() {
+        HorizontalLayout content= new HorizontalLayout(grid,form);
+        content.setFlexGrow(2, grid);
+        content.setFlexGrow(1, form);
+        content.addClassName("content");
+        content.setSizeFull();
+        return content;
+    }
+
+    private void configureForm() {
+        form= new Filterform(Collections.emptyList());
+        form.setWidth("25em");
     }
 
     private Component getToolbar() {
