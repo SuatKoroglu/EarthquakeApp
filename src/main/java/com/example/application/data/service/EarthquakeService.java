@@ -13,46 +13,55 @@ import java.sql.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.ArrayList;
-
 import org.apache.http.protocol.ResponseContent;
 import org.json.JSONArray;  
 import org.json.JSONObject;  
-
 import org.springframework.stereotype.Service;
-
 import com.example.application.data.entity.Earthquake;
 import com.vaadin.flow.component.template.internal.ParserData;
-
-import elemental.json.JsonObject;
+import java.time.*;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 @SuppressWarnings("serial")
 @Service
 public class EarthquakeService implements Serializable {
-    public static List<Earthquake> getdata() {
+//if filter is null then use defult variable (3), if not use the data given by the user
+    public static List<Earthquake> findallearthquakes(String filterText){
+        if(filterText== null || filterText.isEmpty()){
+            return getdata("5");
+        }else{
+            
+            return services.search(filterText);
+        }
+    }
+//function for geting the data from api. 
+    public static List<Earthquake> getdata(String many) {
 
         BufferedReader reader;
         String line;
         StringBuffer responseContent = new StringBuffer();
 
         try {
-            //Public API:
-            //https://www.metaweather.com/api/location/search/?query=<CITY>
-            //https://www.metaweather.com/api/location/44418/
 
+            LocalDate today = LocalDate.now();
+            LocalDate before= today.plusDays(-Integer.valueOf(many));
+            //create a url with using the data given by user
+            String myurl= "https://earthquake.usgs.gov/fdsnws/event/1/query&starttime="+before+"&endtime="+today+"&minmagnitude=3&format=text";
             
             
             
-            URL url = new URL("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2022-01-01&endtime=2022-01-03&minmagnitude=3&format=text");
+            URL url = new URL(myurl);
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.connect();
 
-            //Check if connect is made
-            int responseCode = conn.getResponseCode();
+            
+            
 
 
-
+            //read the data
             reader= new BufferedReader(new InputStreamReader(conn.getInputStream()));
             while((line= reader.readLine()) !=null){
                 responseContent.append(line);
@@ -60,17 +69,9 @@ public class EarthquakeService implements Serializable {
 
             }
             reader.close();
-
-            
-
-            //System.out.println(responseContent.toString());
-
-
-                
-                
-          
+            //call parseData function to parse data into pieces
             return parseData(responseContent.toString());
-            //return null;
+            
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,62 +79,22 @@ public class EarthquakeService implements Serializable {
             
         }
         return parseData(responseContent.toString());
-        //return null;
+        
     }
 
     
     static List<Earthquake> earthquakelist= new ArrayList<>();
-/*
- 
 
-    
-    public static List<Earthquake> parseData(String response){
-
-
-            String[] asd = response.split("\\|20");
-            for (String i: asd) {
-                String wuhu[]= i.split("\\|");
-                int count =0;
-                for(String j:wuhu){
-                    System.out.println(j+" "+count);
-
-                    count++;
-                    //if(count)
-                }
-                String[] place= wuhu[11].split(",");
-                String loc;
-                String country= place[0];
-                if(place.length==2){loc= place[1];
-                }else{loc= place[0];}
-
-                String magnitude= wuhu[9];
-                String date= wuhu[0].substring(0,8);
-                String clock;
-                
-                if(wuhu[0].length()!=8){
-                    clock= wuhu[0].substring(12,17);
-                }else{
-                    clock= wuhu[0].substring(0,8);
-                }
-                
-                Earthquake earthquake= new Earthquake(country, loc, magnitude, date, clock);
-                earthquakelist.add(earthquake);
-                
-              }
-            
-
-            
-        
-        return earthquakelist;    
-        
-     }
- */
   
-
+    //a function for put data in pieces
     public static List<Earthquake> parseData(String response){
-
+        /*
+         * Our data comes like this: #EventID|Time|Latitude|Longitude|Depth/km|Author|Catalog|Contributor|ContributorID|MagType|Magnitude|MagAuthor|EventLocationName
+         * to parse the data we spit data by "|"
+         * 
+         */
         String[] wuhu = response.split("\\|");
-        
+        //create atributes of Earhquake object
         String country="";
         String loc="";
         String magnitude="";
@@ -141,19 +102,18 @@ public class EarthquakeService implements Serializable {
         String clock="";
 
         int count =0;
+        //for loop in out string array
         for (String i: wuhu) {
-            
-            
 
-             
             count++;  
             
-            
+          //the firs 14 string is : #EventID|Time|Latitude|Longitude|Depth/km|Author|Catalog|Contributor|ContributorID|MagType|Magnitude|MagAuthor|EventLocationName
+          //we are not gona use them  
             if(count<14){
                 continue;
             }
             else{
-                System.out.println(i+" "+count);
+                // every 12 times we get the same type of data. Thats why we use %12. The result gives us information about where we are at that moment.
                 switch ((count-13)%12){
 
                    
@@ -161,36 +121,34 @@ public class EarthquakeService implements Serializable {
                         magnitude=i;
                         break;
                     case(1):
-                        //date=i.substring(0,10);
-                        //clock=i.substring(10,19);
+
                         date=i;
                         clock=i;
                         break;
                     case(0):
-                        /* 
-                        String[] place=i.split(", ");
-                        if(place.length==2){country=place[0];}
-                        else{country=place[0].substring(0,place[0].length()-10);}
-                        if(place.length==2){loc= place[1].substring(0,place[0].length()-10);
-                        }else{loc= place[0].substring(0,place[0].length()-10);}
-*/
+
                         country=i.substring(0,i.length()-10);
                         loc=i.substring(0,i.length()-10);
                         break;
                 }
                 
             }
-            
+            //every 12 time we have provided the atribute to create an object. We store the object with the fallowing code
                 if(((count-13)%12==0)){
-                    Earthquake earthquake= new Earthquake(loc, country, magnitude, date, clock);
+                    Earthquake earthquake= new Earthquake(loc,country, magnitude, date, clock);
+                    //save the object in a list
                     earthquakelist.add(earthquake);
                 }
                 
             }
-                
+    //return the list          
     return earthquakelist;  
     
     }
+
+
+
+    
 
 }
 

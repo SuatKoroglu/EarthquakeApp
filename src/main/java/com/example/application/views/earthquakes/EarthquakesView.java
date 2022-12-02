@@ -5,8 +5,9 @@ import java.util.Collections;
 import java.util.List;
 
 import com.example.application.data.entity.Earthquake;
-
+import com.example.application.data.repository.EarthquakeRepository;
 import com.example.application.data.service.EarthquakeService;
+import com.example.application.data.service.services;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -28,9 +29,11 @@ public class EarthquakesView extends VerticalLayout {
     Grid<Earthquake> grid = new Grid<>(Earthquake.class, false);
     TextField filterText= new TextField();
     Filterform form;
+    EarthquakeService service;
 
-    public EarthquakesView() {
-
+    public EarthquakesView(EarthquakeService service) {
+        this.service=service;
+        //I have give a classname for using ccs later
         addClassName("Earthquake-view");
         setSizeFull();
         configureGrid();
@@ -40,9 +43,13 @@ public class EarthquakesView extends VerticalLayout {
             getToolbar(),
             getContent()
         );
-        
+        updatelist();  
     }
-
+    //update the grid with by the given parameters in textfield
+    void updatelist() {
+        grid.setItems(service.findallearthquakes(filterText.getValue()));
+    }
+    //the contets is here
     private Component getContent() {
         HorizontalLayout content= new HorizontalLayout(grid,form);
         content.setFlexGrow(2, grid);
@@ -51,36 +58,37 @@ public class EarthquakesView extends VerticalLayout {
         content.setSizeFull();
         return content;
     }
-
+    //contents are put together here for clean coding
     private void configureForm() {
         form= new Filterform(Collections.emptyList());
         form.setWidth("25em");
     }
-
+    //the objects in toolbar are put together here for clean coding
     private Component getToolbar() {
-        filterText.setPlaceholder("Filter by Country") ;
+        filterText.setPlaceholder("Filter by name");
         filterText.setClearButtonVisible(true);
         filterText.setValueChangeMode(ValueChangeMode.LAZY);
-        
+        filterText.addValueChangeListener(e-> updatelist());
+
         Button filterbutton =new Button("Filters");
         HorizontalLayout toolbar= new HorizontalLayout(filterText, filterbutton);
         toolbar.addClassName("toolbar");
+        filterbutton.addClickListener(e-> updatelist());
+
         return toolbar;
     }
 
  
-
+    //Creating a grid with 3 parameters
     private void configureGrid() {
 
         grid.addClassName("Earthquake-grid");
         grid.setSizeFull();
-        grid.addColumn(Earthquake -> Earthquake.getCountry()).setHeader("Country");
-        grid.addColumn(Earthquake -> Earthquake.getPlace()).setHeader("Place");
+        grid.addColumn(Earthquake -> Earthquake.getPlace()).setHeader("Country/Place");
         grid.addColumn(Earthquake -> Earthquake.getMagnitude()).setHeader("Magnitude");
-        grid.addColumn(Earthquake -> Earthquake.getDate()).setHeader("Date");
-        grid.addColumn(Earthquake -> Earthquake.getTime()).setHeader("Time");
+        grid.addColumn(Earthquake -> Earthquake.getDate()).setHeader("Date/Time");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
-        grid.setItems(EarthquakeService.getdata());
+        
     }
 
 }

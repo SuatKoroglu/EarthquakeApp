@@ -1,12 +1,15 @@
 package com.example.application.data.entity;
 import javax.annotation.Nonnull;
 
+import com.vaadin.flow.component.template.Id;
 
 
 
+//The Filterform with Country, Place, Magnitude, Date, Time
 public class Earthquake  {
 
     @Nonnull
+    @Id
     private String Country = "";
 
     @Nonnull

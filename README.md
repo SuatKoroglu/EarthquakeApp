@@ -5,7 +5,7 @@ This project is a web application written in Java which returns the recorded Ear
 Codes are written with Java(Vaadin framework)
 
 For the earthquake data I used the following API https://earthquake.usgs.gov/fdsnws/event/1/
-
+(Currently there is a problem with the filtering operations)
 
 ## Project structure
 
