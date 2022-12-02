@@ -42,7 +42,7 @@ public class EarthquakeService implements Serializable {
             
             
             
-            URL url = new URL("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2022-01-01&endtime=2022-01-02&minmagnitude=5&format=text");
+            URL url = new URL("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2022-01-01&endtime=2022-01-03&minmagnitude=3&format=text");
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -83,8 +83,12 @@ public class EarthquakeService implements Serializable {
 
     
     static List<Earthquake> earthquakelist= new ArrayList<>();
+/*
+ 
+
     
     public static List<Earthquake> parseData(String response){
+
 
             String[] asd = response.split("\\|20");
             for (String i: asd) {
@@ -123,7 +127,70 @@ public class EarthquakeService implements Serializable {
         return earthquakelist;    
         
      }
+ */
+  
+
+    public static List<Earthquake> parseData(String response){
+
+        String[] wuhu = response.split("\\|");
+        
+        String country="";
+        String loc="";
+        String magnitude="";
+        String date="";
+        String clock="";
+
+        int count =0;
+        for (String i: wuhu) {
+            
+            
+
+             
+            count++;  
+            
+            
+            if(count<14){
+                continue;
+            }
+            else{
+                System.out.println(i+" "+count);
+                switch ((count-13)%12){
+
+                   
+                    case(10):
+                        magnitude=i;
+                        break;
+                    case(1):
+                        //date=i.substring(0,10);
+                        //clock=i.substring(10,19);
+                        date=i;
+                        clock=i;
+                        break;
+                    case(0):
+                        /* 
+                        String[] place=i.split(", ");
+                        if(place.length==2){country=place[0];}
+                        else{country=place[0].substring(0,place[0].length()-10);}
+                        if(place.length==2){loc= place[1].substring(0,place[0].length()-10);
+                        }else{loc= place[0].substring(0,place[0].length()-10);}
+*/
+                        country=i.substring(0,i.length()-10);
+                        loc=i.substring(0,i.length()-10);
+                        break;
+                }
+                
+            }
+            
+                if(((count-13)%12==0)){
+                    Earthquake earthquake= new Earthquake(loc, country, magnitude, date, clock);
+                    earthquakelist.add(earthquake);
+                }
+                
+            }
+                
+    return earthquakelist;  
+    
+    }
+
 }
-
-
 
